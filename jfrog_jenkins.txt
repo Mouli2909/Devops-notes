@@ -1,0 +1,152 @@
+We are doing this on a t2.medium  instance.
+
+
+#!/bin/bash
+sudo yum install git -y
+sudo yum install maven -y
+sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+sudo yum install jenkins -y
+sudo systemctl enable jenkins
+sudo systemctl start jenkins
+sudo wget -O /etc/yum.repos.d/jfrog-artifactory-rpms.repo https://releases.jfrog.io/artifactory/artifactory-rpms/artifactory-rpms.repo
+sudo mv jfrog-artifactory-rpms.repo /etc/yum.repos.d/ 
+sudo yum update && sudo yum install jfrog-artifactory-oss -y
+sudo systemctl start artifactory.service
+
+
+--------------------------------------------------------------------------------------------------
+
+open jfrog browser by using port 8081 or 8082 with Public IP address [ xxxxx:8082  ]
+username and password is admin and password respectively
+skip base url
+skip configure default proxy
+click on 'maven' in create repo
+next>finish
+On top right there is a drop down box at Welcome,Admin > Click on that
+New Local repository
+select maven
+* Repository key : lol (any name ) 
+Click on create repository
+
+Click on the top left gears icon>Repositories>Repositories
+It shows lol maven repository has been created
+
+Now click on the windows icon next to the gears icon>Artifactory>Artifacts
+Click on lol repository
+We see info :
+
+URL to File : http://13.233.87.114:8082/artifactory/lol/
+
+This above is the artifactory lol repository path
+
+
+--------------------------------------------------------------------------------------------
+
+In ec2connect:
+
+sudo systemctl status artifactory.service
+sudo su -
+open jenkins browser with IP address [ xxxxx:8080  ]
+cat /var/lib/jenkins/secrets/initialAdminPassword
+copy password in jenkins browser
+start the jenkins process ny installing plugins, making new user etc
+
+Goto Manage Jenkins> Tools
+
+Under JDK installations> Add JDK 
+Name      :    JAVA_HOME
+JAVA_HOME :    /usr/lib/jvm/java-17-amazon-corretto.x86_64
+
+
+Scroll down till you see Maven installations> Add Maven
+uncheck install automatically box
+Name       : MAVEN_HOME
+MAVEN_HOME : /usr/share/maven
+
+Goto Manage Jenkins> Plugins> Available Plugins
+Install the following plugins:
+
+Maven Integration
+Artifactory
+
+
+Goto Manage Jenkins> System
+
+Scroll down to JFrog
+Click on Add Jfrog Platform Instance
+
+Instance ID : jpog (any name )
+JFrog Platform URL: http://13.233.87.114:8082/
+Username : admin
+Password : ***** (password for jfrog at login)
+click on Test connection
+Apply>save
+
+Before creating pipeline job 
+
+The [ serverId ] is the Instance ID which we created just now, in this case  jpog 
+the [ "target" : ] is the repository name in the Jfrog which we created earlier , in this case  lol 
+
+Make the changes accordingly in your pipeline and proceed.
+
+
+Create pipeline job in Jenkins: 
+
+
+pipeline {
+    agent any
+
+    stages {
+        stage('stage-1') {
+            steps {
+                git branch: 'main', url: 'https://github.com/nareshdevopscloud/project-1-maven-jenkins-CICD-docker-eks-.git'
+            }
+        }
+   
+        stage('clean') {
+            steps {
+              sh  'mvn clean'
+            }
+        }
+        
+        stage('test') {
+            steps {
+              sh  'mvn test'
+            }
+        }
+        stage('install') {
+            steps {
+               sh  'mvn install'
+            }
+        }
+        
+        stage('Push artifacts into artifactory') {
+            steps {
+              rtUpload (
+                serverId: 'jpog',
+                spec: '''{
+                      "files": [
+                        {
+                          "pattern": "*.war",
+                           "target": "lol/"
+                        }
+                    ]
+                }'''
+              )
+          }
+        }
+    }
+}    
+
+-------------------------------------------------------------------------
+
+
+
+Now goto (or refresh) Jfrog browser>Now click on the windows icon next to the gears icon>Artifactory>Artifacts
+click on the drop down arrow on the lol repository
+We see a webapp.war file !
+
+
+
+Your done ! !

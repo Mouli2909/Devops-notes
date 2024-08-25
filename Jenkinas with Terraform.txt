@@ -1,0 +1,287 @@
+--------############# CICD #############---------------
+--------------------------------------------------
+
+what is CICD?
+
+In software engineering, CI/CD or CICD is the combined practices of continuous integration and continuous delivery or, less often, continuous deployment. They are sometimes referred to collectively as continuous development or continuous software development
+
+Why Jenkins? 
+
+Jenkins is an open-source automation tool for Continuous Integration (CI) and Continuous Deployment (CD).
+
+It is an open-source tool with great community support.
+It is easy to install.
+It has 1000+ plugins to ease your work. If a plugin does not exist, you can code it and share it with the community.
+It is free of cost.
+It is built with Java and hence, it is portable to all the major platforms.
+Inventor: kohsuke kawaguchi
+its a free and open-source tool.
+jenkins written on java.
+it can automate entire sdlc.
+it is owned by sun micro system as hudson.
+hudson is paid version.
+later oracle brought hudson and make it free.
+later hudson was renamed as jenins.
+
+
+
+jenkins runs on 8080 port 
+
+For amazon linux 2023 AMi type
+=================================
+
+Login to server with username and switch to root user
+command : sudo su - 
+Provide the password
+===================
+
+jenkin supports JAVA 11/17
+
+sudo dnf update -y --> it will install or updates the patches
+
+sudo dnf install java-11-amazon-corretto -y --> to install the openjdk11
+
+sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo --> Install the repo
+
+if wget command not found.Please install the wget software using this command "yum install wget -y"
+
+sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key --> Import the required key
+
+sudo yum install jenkins -y --> install the jenkins
+
+sudo systemctl enable jenkins --> Enable the jenkins
+
+sudo systemctl start jenkins --> start jenkins
+
+sudo systemctl status jenkins --> check the status of jenkins service
+
+TO CONNECT:
+public_ip:8080 (browser)
+cat /var/lib/jenkins/secrets/initialAdminPassword (server)
+paster password on browser -- > installing plugins --- > user details -- > start
+
+WORKSPACE: job output is going to be stored in workspace
+
+Default: /var/lib/jenkins/workspace
+
+
+=================================================
+
+Process for Amazon linux 2 AMI type
+==========================================
+
+
+Login to server with username and switch to root user
+command : sudo su - 
+Provide the password
+===================
+
+sudo yum update -y --> it will install or updates the patches
+
+sudo amazon-linux-extras install java-openjdk11 -y --> to install the openjdk11
+
+sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo --> Install the repo
+
+if wget command not found.Please install the wget software using this command "yum install wget -y"
+
+sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key --> Import the required key
+
+sudo yum install jenkins -y --> install the jenkins
+
+sudo systemctl enable jenkins --> Enable the jenkins
+
+sudo systemctl start jenkins --> start jenkins
+
+sudo systemctl status jenkins --> check the status of jenkins service
+
+
+-----------------pipeline ----------------
+
+1. Declaritive
+2. Groovy scripted 
+
+------------------------------------------------
+Declaritive 
+---------------------------------------------------
+Basic Example:
+
+(PASSS:shortcut)
+----------------------
+single stage:example 
+-----------------------------------
+pipeline {
+    agent any
+
+    stages {
+        stage('first') {
+            steps {
+                echo 'Hello first stage'
+            }
+        }
+    }
+}
+
+--------------------------
+multi stage example:
+-------------------------
+pipeline {
+    agent any
+
+    stages {
+        stage('first') {
+            steps {
+                echo 'Hello first stage'
+            }
+        }
+        
+        stage('second') {
+            steps {
+                echo 'Hello second stage'
+            }
+        }
+    }
+
+
+
+
+---------------------------------------------------------------------------
+Groovy
+---------------------------------------------------------
+Basic example:
+
+ node{
+   stage{"first") {
+   sh file-1
+    }
+   stage{"second") {
+   sh file-2
+    }
+}
+
+
+
+------------------- terraform installation-----------------
+
+sudo yum install -y yum-utils shadow-utils
+sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
+sudo yum -y install terraform
+
+------------------------------
+# Deploy Terraform script by using jenkins 
+
+----declaritive--------
+
+pipeline {
+    agent any
+
+    stages {
+        stage('checkout') {
+            steps {
+                git branch: 'main', credentialsId: 'terraform', url: 'https://github.com/nareshdevopscloud/terraform-jenkins.git'
+            }
+        }
+        stage('init') {
+            steps {
+                sh "terraform init -reconfigure"
+            }
+        }
+        stage('plan') {
+            steps {
+                sh "terraform plan"
+            }
+        }
+        stage('action') {
+            steps {
+                sh "terraform ${action} --auto-approve"
+            }
+        }
+    }
+}
+
+
+------------------------groovy-----------------
+
+node {
+    stage('checkout') { 
+        git branch: 'main', credentialsId: 'terraform', url: 'https://github.com/nareshdevopscloud/terraform-jenkins.git'
+    }
+    stage('init') {
+        sh "terraform init -reconfigure"
+        
+        }
+    stage('action') {
+        sh "terraform ${action} --auto-approve"
+        
+        }
+}
+
+======================================================== 
+# call specific path from github
+
+node {
+    stage('checkout') { 
+      git branch: 'main', url: 'https://github.com/CloudTechDevOps/Terraform.git'
+    }
+    stage('init') {
+       dir('day-2-basic_code'){
+        sh "terraform init -reconfigure"
+       }
+        }
+    stage('action') {
+        sh "terraform destroy --auto-approve"
+        
+        }
+}
+
+-----------------------------------------------
+approach 3: 
+
+
+Note:   
+
+
+#created jenkins file uploded into github
+
+#we can run job by calling above jenkins file in git hub 
+
+--To Implement 
+
+give GITHUB url and in defination section we need to "sleect pipeline script from scm" option and build the job
+#Jenkins file
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                checkout scm
+            }
+        }
+    
+        stage ("terraform init") {
+            steps {
+                sh ("terraform init -reconfigure") 
+            }
+        }
+        
+        stage ("plan") {
+            steps {
+                sh ('terraform plan') 
+            }
+        }
+
+        stage (" Action") {
+            steps {
+                echo "Terraform action is --> ${action}"
+                sh ('terraform ${action} --auto-approve') 
+           }
+        }
+    }
+}
+
+
+
+
+
+

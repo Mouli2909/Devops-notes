@@ -1,0 +1,85 @@
+-----------------Git (global integration tool)--------------------------
+Day-1 
+
+What is Git? Git is a DevOps tool used for source code management. It is a free and open-source version control system used to handle small to very large projects efficiently. Git is used to tracking changes in the source code, enabling multiple developers to work together on non-linear development.
+
+
+
+
+*****Installation for Git in your local laptop :
+ URL- https://git-scm.com/downloads   #it support os like Windows,Linux,Mac.
+
+yum install git -y # for Amazon linux 2
+
+After completion of  of installation process  Open cmd promt and check : git --version 
+
+
+"all git command start with git"
+
+-----introduce yourself to Git-------------- 
+-
+
+---------------------Git commands---------------------
+----------------### Tell to  who you are----------------------------
+
+
+git config --global user.name "<name>"      To configure username into git 
+git config --global user.email "<email>"    To configure email into git 
+
+Example:
+git config --global user.name "veer"
+git config --global user.email "cloud87777@gmail.com"
+
+
+--------------------------Git Workflow----------------------------
+
+git init # to intilaise git into working directory 
+
+git status # to chacke the files tracked/untracked
+
+git add  # to add files form working directory to staging areas
+
+git commit -m   # to add files staging are to local repositoy 
+
+git log # to check commit history 
+
+
+---------------------------- Git HUB----------------------------
+Day:2
+
+Git Hub is remote repository where we are going to mainatain our source code
+
+here we have two type of repositories we can create 
+
+1. Public
+2. Private 
+
+public repository : everyone can read which means every one can clone but not write which means push
+
+access required for that credentials or ssh keys 
+
+private Repository: No one can clone untill has permissions of "ssh" after adding key only able to clone or pull from remote repository
+
+git clone: we can clone entire repository in very first time if you are start the activity with that repository
+
+git pull: we can pull chnages on top of the repository
+
+git push : we can push our changes in to remote repository 
+
+### To generate SSH Key
+
+ssh-keygen (give this command into your terminal)
+
+cd .ssh
+
+copy the publickey id_rsa.pub
+
+paste into github ssh keys 
+
+settings-->ssh and GPG keys--> Add new ssh key and give any name and paste it your publickey over there 
+
+start clone with ssh option 
+
+
+
+
